@@ -86,36 +86,32 @@ OUTPUT → authenticated secure channel, echoed encrypted messages
 ### High-Level Component Map
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#1565C0', 'edgeLabelBackground': '#FFFFFF'}}}%%
 graph TB
-    classDef entry fill:#1565C0,stroke:#0D47A1,color:#FFFFFF,font-weight:bold
-    classDef crypto fill:#6A1B9A,stroke:#4A148C,color:#FFFFFF
-    classDef demo  fill:#00695C,stroke:#004D40,color:#FFFFFF
-    classDef db    fill:#4527A0,stroke:#311B92,color:#FFFFFF
-    classDef test  fill:#37474F,stroke:#263238,color:#FFFFFF
-
-    CLI["main.py<br/>Interactive CLI Entry Point"]:::entry
+    CLI(["main.py<br/>Interactive CLI Entry Point"])
 
     subgraph MODULES["Core Cryptographic Modules (modules/)"]
-        AES["aes_module.py<br/>AES-128-EAX<br/>Symmetric Encryption"]:::crypto
-        RSA["rsa_module.py<br/>RSA-2048-OAEP<br/>Asymmetric Encryption"]:::crypto
-        HASH["hash_module.py<br/>SHA-256<br/>Integrity Hashing"]:::crypto
-        KEY["key_manager.py<br/>Key Storage & Loading<br/>scrypt + AES-256-CBC"]:::crypto
-        AUTH["auth_module.py<br/>bcrypt Authentication<br/>User DB Management"]:::crypto
+        direction TB
+        AES["aes_module.py<br/>AES-128-EAX Encryption"]
+        RSA["rsa_module.py<br/>RSA-2048-OAEP"]
+        HASH["hash_module.py<br/>SHA-256 Hashing"]
+        KEY["key_manager.py<br/>Key Storage & Loading"]
+        AUTH["auth_module.py<br/>bcrypt Authentication"]
     end
 
     subgraph DEMO["Network Demo (demo/)"]
-        SERVER["server.py<br/>TCP Server<br/>127.0.0.1:65432"]:::demo
-        CLIENT["client.py<br/>TCP Client<br/>Connects to Server"]:::demo
-        USERDB["users.json<br/>Bcrypt Password Store"]:::db
+        direction TB
+        SERVER["server.py<br/>TCP Server · 127.0.0.1:65432"]
+        CLIENT["client.py<br/>TCP Client"]
+        USERDB["users.json<br/>Bcrypt Password Store"]
     end
 
     subgraph TESTS["Test Suite (tests/)"]
-        T1["test_aes.py — 8 tests"]:::test
-        T2["test_rsa.py — 6 tests"]:::test
-        T3["test_hash.py — 6 tests"]:::test
-        T4["test_key_manager.py — 4 tests"]:::test
-        T5["test_auth.py — 7 tests"]:::test
+        direction TB
+        T1["test_aes.py — 8 tests"]
+        T2["test_rsa.py — 6 tests"]
+        T3["test_hash.py — 6 tests"]
+        T4["test_key_manager.py — 4 tests"]
+        T5["test_auth.py — 7 tests"]
     end
 
     CLI --> AES
@@ -139,6 +135,24 @@ graph TB
 
     KEY --> RSA
     KEY --> AES
+
+    style CLI  fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#312e81
+    style AES  fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style RSA  fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style HASH fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style KEY  fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#312e81
+    style AUTH fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style SERVER fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style CLIENT fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style USERDB fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style T1 fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style T2 fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style T3 fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style T4 fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style T5 fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style MODULES fill:#ecfdf5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style DEMO   fill:#fff7ed,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style TESTS  fill:#f8fafc,stroke:#94a3b8,stroke-width:1px,color:#475569
 ```
 
 ### How Components Communicate
@@ -152,30 +166,27 @@ The system has two distinct communication layers:
 ### Data Flow Overview
 
 ```mermaid
-%%{init: {'theme': 'base'}}%%
 flowchart LR
-    classDef clientNode  fill:#1565C0,stroke:#0D47A1,color:#FFFFFF
-    classDef cryptoNode  fill:#6A1B9A,stroke:#4A148C,color:#FFFFFF
-    classDef networkNode fill:#E65100,stroke:#BF360C,color:#FFFFFF
-    classDef serverNode  fill:#1B5E20,stroke:#0D3B00,color:#FFFFFF
-
     subgraph CLIENT_SIDE["Client Side"]
-        C1["Plaintext Message"]:::clientNode
-        C2["AES Session Key<br/>(16 random bytes)"]:::cryptoNode
-        C3["SHA-256 Hash"]:::cryptoNode
-        C4["JSON Envelope<br/>{hash, data}"]:::clientNode
-        C5["AES-EAX Encrypted<br/>Payload"]:::cryptoNode
+        direction TB
+        C1(["Plaintext Message"])
+        C2["AES Session Key<br/>(16 random bytes)"]
+        C3["SHA-256 Hash"]
+        C4["JSON Envelope<br/>{hash, data}"]
+        C5["AES-EAX Encrypted Payload"]
     end
 
     subgraph NETWORK["TCP Network"]
-        N1["[4B nonce_len][nonce]<br/>[4B tag_len][tag]<br/>[4B ct_len][ciphertext]"]:::networkNode
+        direction TB
+        N1["[4B nonce][4B tag]<br/>[4B ciphertext]"]
     end
 
     subgraph SERVER_SIDE["Server Side"]
-        S1["AES-EAX Decrypt"]:::cryptoNode
-        S2["JSON Parse"]:::serverNode
-        S3["SHA-256 Verify"]:::cryptoNode
-        S4["Plaintext Recovered"]:::serverNode
+        direction TB
+        S1["AES-EAX Decrypt"]
+        S2["JSON Parse"]
+        S3["SHA-256 Verify"]
+        S4(["Plaintext Recovered"])
     end
 
     C1 --> C3
@@ -183,12 +194,26 @@ flowchart LR
     C3 --> C4
     C2 --> C5
     C4 --> C5
-    C5 --> N1
-    N1 --> S1
-    C2 -.->|"RSA-encrypted during handshake"| S1
+    C5 ==> N1
+    N1 ==> S1
+    C2 -.->|"RSA-encrypted<br/>during handshake"| S1
     S1 --> S2
     S2 --> S3
     S3 --> S4
+
+    style C1 fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style C2 fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#312e81
+    style C3 fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style C4 fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style C5 fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style N1 fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style S1 fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style S2 fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style S3 fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style S4 fill:#bbf7d0,stroke:#16a34a,stroke-width:3px,color:#14532d
+    style CLIENT_SIDE fill:#eff6ff,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style NETWORK     fill:#fff7ed,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style SERVER_SIDE fill:#ecfdf5,stroke:#059669,stroke-width:2px,color:#064e3b
 ```
 
 ---
@@ -217,7 +242,7 @@ This workflow is purely educational — each module works in isolation.
 This is the core of the project. It involves a **three-phase protocol**: handshake, authentication, and secure messaging.
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'actorBkg': '#1565C0', 'actorTextColor': '#FFFFFF', 'actorBorder': '#0D47A1', 'noteBkgColor': '#FFF9C4', 'noteTextColor': '#212121', 'activationBkgColor': '#E8EAF6', 'loopTextColor': '#1A237E', 'labelBoxBkgColor': '#E8F5E9', 'signalColor': '#4527A0', 'signalTextColor': '#1A237E'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': {'actorBkg': '#dbeafe', 'actorTextColor': '#1e3a5f', 'actorBorder': '#2563eb', 'noteBkgColor': '#fef9c3', 'noteTextColor': '#713f12', 'activationBkgColor': '#d1fae5', 'loopTextColor': '#064e3b', 'labelBoxBkgColor': '#ecfdf5', 'signalColor': '#4f46e5', 'signalTextColor': '#312e81'}}}%%
 sequenceDiagram
     participant C as Client
     participant S as Server
@@ -423,17 +448,23 @@ Output:        (ciphertext, nonce, tag) tuples in ciphertext_queue
 This implements the **producer-consumer pattern** for high-throughput scenarios. A producer thread generates plaintext; the EncryptionWorker encrypts it; a consumer thread handles the ciphertexts. The worker thread runs as a daemon (`.daemon = True`) so it auto-terminates when the main program exits.
 
 ```mermaid
-%%{init: {'theme': 'base'}}%%
 flowchart LR
-    classDef producer fill:#1565C0,stroke:#0D47A1,color:#FFFFFF,font-weight:bold
-    classDef worker   fill:#6A1B9A,stroke:#4A148C,color:#FFFFFF,font-weight:bold
-    classDef queue    fill:#E65100,stroke:#BF360C,color:#FFFFFF
-    classDef consumer fill:#1B5E20,stroke:#0D3B00,color:#FFFFFF,font-weight:bold
+    P(["Producer Thread<br/>puts plaintext"])
+    Q1["plaintext_queue"]
+    W["EncryptionWorker<br/>calls encrypt()"]
+    Q2["ciphertext_queue"]
+    C(["Consumer Thread<br/>handles ciphertext"])
 
-    P["Producer Thread<br/>puts plaintext into queue"]:::producer -->|"plaintext bytes"| Q1["plaintext_queue"]:::queue
-    Q1 -->|"plaintext_queue.get()"| W["EncryptionWorker Thread<br/>calls encrypt()"]:::worker
-    W -->|"(ct, nonce, tag)"| Q2["ciphertext_queue"]:::queue
-    Q2 -->|"ciphertext_queue.get()"| C["Consumer Thread<br/>handles ciphertext"]:::consumer
+    P -->|"plaintext bytes"| Q1
+    Q1 -->|"queue.get()"| W
+    W -->|"(ct, nonce, tag)"| Q2
+    Q2 -->|"queue.get()"| C
+
+    style P  fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style Q1 fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style W  fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style Q2 fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style C  fill:#bbf7d0,stroke:#16a34a,stroke-width:3px,color:#14532d
 ```
 
 ---
@@ -657,42 +688,48 @@ Options 7 and 8 use `subprocess.run()` to launch the server/client as separate O
 The system implements **Defense in Depth** — multiple independent security layers so that breaking one layer does not compromise the system.
 
 ```mermaid
-%%{init: {'theme': 'base'}}%%
 graph TB
-    classDef l1 fill:#1565C0,stroke:#0D47A1,color:#FFFFFF,font-weight:bold
-    classDef l2 fill:#6A1B9A,stroke:#4A148C,color:#FFFFFF,font-weight:bold
-    classDef l3 fill:#00695C,stroke:#004D40,color:#FFFFFF,font-weight:bold
-    classDef l4 fill:#E65100,stroke:#BF360C,color:#FFFFFF,font-weight:bold
-    classDef l5 fill:#4527A0,stroke:#311B92,color:#FFFFFF,font-weight:bold
-
-    L1["Layer 1: Transport — AES-128-EAX<br/>Nobody can READ the data"]:::l1
-    L2["Layer 2: Key Exchange — RSA-2048-OAEP<br/>Nobody can STEAL the AES key"]:::l2
-    L3["Layer 3: Authentication — bcrypt<br/>Nobody can IMPERSONATE a user"]:::l3
-    L4["Layer 4: Integrity — SHA-256<br/>Nobody can MODIFY the data undetected"]:::l4
-    L5["Layer 5: Key Storage — scrypt + AES-256-CBC<br/>Nobody can STEAL keys from disk"]:::l5
+    L1["Layer 1 · Transport<br/>AES-128-EAX<br/>Nobody can READ the data"]
+    L2["Layer 2 · Key Exchange<br/>RSA-2048-OAEP<br/>Nobody can STEAL the AES key"]
+    L3["Layer 3 · Authentication<br/>bcrypt cost-factor 12<br/>Nobody can IMPERSONATE a user"]
+    L4["Layer 4 · Integrity<br/>SHA-256<br/>Nobody can MODIFY data undetected"]
+    L5["Layer 5 · Key Storage<br/>scrypt + AES-256-CBC<br/>Nobody can STEAL keys from disk"]
 
     L1 --> L2 --> L3 --> L4 --> L5
+
+    style L1 fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style L2 fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#312e81
+    style L3 fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style L4 fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style L5 fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95
 ```
 
 ### Authentication Flow
 
 ```mermaid
-%%{init: {'theme': 'base'}}%%
 flowchart TD
-    classDef input    fill:#1565C0,stroke:#0D47A1,color:#FFFFFF
-    classDef process  fill:#6A1B9A,stroke:#4A148C,color:#FFFFFF
-    classDef decision fill:#F57F17,stroke:#E65100,color:#000000,font-weight:bold
-    classDef success  fill:#1B5E20,stroke:#0D3B00,color:#FFFFFF,font-weight:bold
-    classDef failure  fill:#B71C1C,stroke:#7F0000,color:#FFFFFF,font-weight:bold
+    A(["Receive RSA-encrypted bundle<br/>{username, password, aes_key}"])
+    B["RSA decrypt with private key"]
+    C{"username in db?"}
+    D["bcrypt.checkpw()<br/>password vs stored hash"]
+    E{"Hash matches?"}
+    FAIL["Send AUTH_FAIL<br/>Close connection"]
+    OK(["Send AUTH_OK<br/>Enter secure messaging loop"])
 
-    A["Client sends RSA-encrypted bundle<br/>{username, password, aes_key}"]:::input --> B
-    B["Server decrypts with RSA private key"]:::process --> C
-    C{username in db?}:::decision
-    C -->|No| FAIL["Send AUTH_FAIL<br/>Close connection"]:::failure
-    C -->|Yes| D["bcrypt.checkpw(password, stored_hash)"]:::process
-    D --> E{Hash matches?}:::decision
+    A --> B --> C
+    C -->|No| FAIL
+    C -->|Yes| D
+    D --> E
     E -->|No| FAIL
-    E -->|Yes| OK["Send AUTH_OK<br/>Store aes_key<br/>Enter secure messaging loop"]:::success
+    E -->|Yes| OK
+
+    style A    fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style B    fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style C    fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    style D    fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style E    fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    style FAIL fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style OK   fill:#bbf7d0,stroke:#16a34a,stroke-width:3px,color:#14532d
 ```
 
 **Why bcrypt and not SHA-256 for passwords?**
@@ -706,75 +743,93 @@ bcrypt is designed to be **slow** — each computation involves thousands of ite
 ### Message Integrity Detection Flow
 
 ```mermaid
-%%{init: {'theme': 'base'}}%%
 flowchart TD
-    classDef input    fill:#1565C0,stroke:#0D47A1,color:#FFFFFF
-    classDef process  fill:#6A1B9A,stroke:#4A148C,color:#FFFFFF
-    classDef decision fill:#F57F17,stroke:#E65100,color:#000000,font-weight:bold
-    classDef success  fill:#1B5E20,stroke:#0D3B00,color:#FFFFFF,font-weight:bold
-    classDef failure  fill:#B71C1C,stroke:#7F0000,color:#FFFFFF,font-weight:bold
+    R(["Receive 3 frames<br/>nonce · tag · ciphertext"])
+    D["AES-EAX decrypt_and_verify()"]
+    E{"Tag valid?"}
+    ERR1["Raise ValueError<br/>'MAC check failed'<br/>No plaintext returned"]
+    F["JSON parse payload<br/>{hash, data}"]
+    G["SHA-256 hash(data)"]
+    H{"Computed == stored?"}
+    ERR2["Raise ValueError<br/>'Integrity check failed'"]
+    OK(["Return plaintext — CLEAN"])
 
-    R["Receive 3 frames: nonce, tag, ciphertext"]:::input --> D
-    D["AES-EAX decrypt_and_verify(ciphertext, tag)"]:::process
-    D --> E{Tag valid?}:::decision
-    E -->|No — TAMPERED CIPHERTEXT| ERR1["Raise ValueError<br/>'MAC check failed'<br/>No plaintext returned"]:::failure
-    E -->|Yes| F["JSON parse payload → {hash, data}"]:::process
-    F --> G["SHA-256 hash(data)"]:::process
-    G --> H{Computed hash == stored hash?}:::decision
-    H -->|No — REPLAYED/MODIFIED DATA| ERR2["Raise ValueError<br/>'Integrity check failed'"]:::failure
-    H -->|Yes| OK["Return plaintext — CLEAN"]:::success
+    R --> D --> E
+    E -->|No — TAMPERED| ERR1
+    E -->|Yes| F
+    F --> G --> H
+    H -->|No — REPLAYED| ERR2
+    H -->|Yes| OK
+
+    style R    fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style D    fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style E    fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    style ERR1 fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style F    fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style G    fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style H    fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    style ERR2 fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style OK   fill:#bbf7d0,stroke:#16a34a,stroke-width:3px,color:#14532d
 ```
 
 ### Threat Model & Mitigations
 
 ```mermaid
-mindmap
-  root((Threats))
-    Eavesdropping
-      Attacker reads network traffic
-      Mitigation: AES-128-EAX encrypts all data
-      Key never transmitted in plaintext
-    Man-in-the-Middle
-      Attacker intercepts key exchange
-      Mitigation: RSA-OAEP, only server private key can decrypt
-      In production: add PKI/certificate pinning
-    Replay Attacks
-      Attacker resends old encrypted messages
-      Mitigation: Fresh nonce per message prevents decryption of replayed data
-    Brute-Force Password
-      Attacker tries millions of passwords
-      Mitigation: bcrypt cost factor 12, ~200ms per attempt
-    Stolen Key Files
-      Attacker copies PEM file from disk
-      Mitigation: scrypt + AES-256-CBC encryption requires passphrase
-    Ciphertext Tampering
-      Attacker modifies bytes in transit
-      Mitigation: AES-EAX tag fails, ValueError raised, plaintext never returned
-    Timing Side-Channels
-      Measure response time to learn password length
-      Mitigation: bcrypt constant-time comparison
+graph TB
+    ROOT{{"Security Threats & Mitigations"}}
+
+    ROOT --> T1["Eavesdropping<br/>reads network traffic"]
+    ROOT --> T2["Man-in-the-Middle<br/>intercepts key exchange"]
+    ROOT --> T3["Replay Attacks<br/>resends old messages"]
+    ROOT --> T4["Brute-Force Password<br/>tries millions of guesses"]
+    ROOT --> T5["Stolen Key Files<br/>copies PEM from disk"]
+    ROOT --> T6["Ciphertext Tampering<br/>modifies bytes in transit"]
+    ROOT --> T7["Timing Side-Channels<br/>measures response time"]
+
+    T1 --> M1["AES-128-EAX encrypts all data<br/>key never in plaintext"]
+    T2 --> M2["RSA-OAEP: only server<br/>private key decrypts"]
+    T3 --> M3["Fresh nonce per message<br/>prevents replay decryption"]
+    T4 --> M4["bcrypt cost factor 12<br/>~200 ms per attempt"]
+    T5 --> M5["scrypt + AES-256-CBC<br/>passphrase required"]
+    T6 --> M6["AES-EAX tag raises ValueError<br/>no plaintext returned"]
+    T7 --> M7["bcrypt constant-time<br/>comparison"]
+
+    style ROOT fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    style T1 fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style T2 fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style T3 fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style T4 fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style T5 fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style T6 fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style T7 fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style M1 fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d
+    style M2 fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d
+    style M3 fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d
+    style M4 fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d
+    style M5 fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d
+    style M6 fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d
+    style M7 fill:#bbf7d0,stroke:#16a34a,stroke-width:2px,color:#14532d
 ```
 
 ### Key Exchange State Machine
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#1565C0', 'primaryTextColor': '#FFFFFF', 'primaryBorderColor': '#0D47A1', 'lineColor': '#37474F', 'secondaryColor': '#6A1B9A', 'tertiaryColor': '#E8F5E9'}}}%%
 stateDiagram-v2
-    classDef setup     fill:#1565C0,color:#FFFFFF,font-weight:bold
-    classDef handshake fill:#6A1B9A,color:#FFFFFF,font-weight:bold
-    classDef success   fill:#1B5E20,color:#FFFFFF,font-weight:bold
-    classDef failure   fill:#B71C1C,color:#FFFFFF,font-weight:bold
-    classDef active    fill:#00695C,color:#FFFFFF,font-weight:bold
-    classDef check     fill:#E65100,color:#FFFFFF,font-weight:bold
+    classDef input     fill:#dbeafe,stroke:#2563eb,color:#1e3a5f
+    classDef process   fill:#d1fae5,stroke:#059669,color:#064e3b
+    classDef builder   fill:#e0e7ff,stroke:#4f46e5,color:#312e81
+    classDef done      fill:#bbf7d0,stroke:#16a34a,color:#14532d
+    classDef fail      fill:#fecaca,stroke:#dc2626,color:#7f1d1d
+    classDef decision  fill:#fef9c3,stroke:#ca8a04,color:#713f12
 
     [*] --> SERVER_INIT: Server starts
 
     SERVER_INIT --> LISTENING: RSA keypair generated, socket bound
-    LISTENING --> CONNECTED: Client connects (accept())
-    CONNECTED --> KEY_SENT: Server sends RSA public key (PEM)
-    KEY_SENT --> BUNDLE_RECEIVED: Client sends RSA-encrypted bundle
+    LISTENING --> CONNECTED: Client connects — accept()
+    CONNECTED --> KEY_SENT: Server sends RSA public key
+    KEY_SENT --> BUNDLE_RECEIVED: Client sends encrypted bundle
 
-    BUNDLE_RECEIVED --> AUTH_CHECKING: Server decrypts bundle, extracts credentials
+    BUNDLE_RECEIVED --> AUTH_CHECKING: Decrypt bundle, extract credentials
     AUTH_CHECKING --> AUTH_FAILED: bcrypt mismatch
     AUTH_CHECKING --> AUTHENTICATED: bcrypt match
 
@@ -789,14 +844,14 @@ stateDiagram-v2
     ECHO_SENT --> MSG_RECEIVED: Loop continues
 
     TAMPER_DETECTED --> [*]: ValueError raised, connection drops
-    MSG_RECEIVED --> [*]: Client disconnects (ConnectionError)
+    MSG_RECEIVED --> [*]: Client disconnects — ConnectionError
 
-    class SERVER_INIT,LISTENING,CONNECTED,KEY_SENT setup
-    class BUNDLE_RECEIVED,AUTH_CHECKING handshake
-    class AUTHENTICATED,SECURE_CHANNEL,MSG_PROCESSED,ECHO_SENT success
-    class AUTH_FAILED,TAMPER_DETECTED failure
-    class MSG_RECEIVED active
-    class INTEGRITY_CHECK check
+    class SERVER_INIT,LISTENING,CONNECTED,KEY_SENT input
+    class BUNDLE_RECEIVED,AUTH_CHECKING decision
+    class AUTHENTICATED,SECURE_CHANNEL builder
+    class MSG_RECEIVED,INTEGRITY_CHECK process
+    class MSG_PROCESSED,ECHO_SENT done
+    class AUTH_FAILED,TAMPER_DETECTED fail
 ```
 
 ### Wire Protocol Structure
@@ -827,31 +882,28 @@ Ciphertext decrypts to JSON:
 ### Function Interaction Map
 
 ```mermaid
-%%{init: {'theme': 'base'}}%%
 flowchart TD
-    classDef serverFunc fill:#00695C,stroke:#004D40,color:#FFFFFF,font-weight:bold
-    classDef netFunc    fill:#1565C0,stroke:#0D47A1,color:#FFFFFF
-    classDef cryptoFunc fill:#6A1B9A,stroke:#4A148C,color:#FFFFFF
-
     subgraph SERVER["server.py"]
-        M["main()"]:::serverFunc
-        SF["send_framed()"]:::netFunc
-        RF["recv_framed()"]:::netFunc
-        RE["_recv_exact()"]:::netFunc
-        SS["send_secure()"]:::serverFunc
-        RS["recv_secure()"]:::serverFunc
+        direction TB
+        M(["main()"])
+        SF["send_framed()"]
+        RF["recv_framed()"]
+        RE["_recv_exact()"]
+        SS["send_secure()"]
+        RS["recv_secure()"]
     end
 
     subgraph CRYPTO["modules/"]
-        GK["generate_rsa_keypair()"]:::cryptoFunc
-        EPK["export_public_key()"]:::cryptoFunc
-        DPK["decrypt_with_private_key()"]:::cryptoFunc
-        ENC["encrypt()"]:::cryptoFunc
-        DEC["decrypt()"]:::cryptoFunc
-        HM["hash_message()"]:::cryptoFunc
-        VI["verify_integrity()"]:::cryptoFunc
-        LDB["load_user_db()"]:::cryptoFunc
-        AU["authenticate_user()"]:::cryptoFunc
+        direction TB
+        GK["generate_rsa_keypair()"]
+        EPK["export_public_key()"]
+        DPK["decrypt_with_private_key()"]
+        ENC["encrypt()"]
+        DEC["decrypt()"]
+        HM["hash_message()"]
+        VI["verify_integrity()"]
+        LDB["load_user_db()"]
+        AU["authenticate_user()"]
     end
 
     M --> GK
@@ -871,6 +923,24 @@ flowchart TD
     RS --> RF
     RS --> DEC
     RS --> VI
+
+    style M   fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#312e81
+    style SF  fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style RF  fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style RE  fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style SS  fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style RS  fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style GK  fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#312e81
+    style EPK fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style DPK fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style ENC fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style DEC fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style HM  fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style VI  fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style LDB fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style AU  fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style SERVER fill:#fff7ed,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style CRYPTO fill:#ecfdf5,stroke:#059669,stroke-width:2px,color:#064e3b
 ```
 
 ---
@@ -923,55 +993,76 @@ Secure-Communication-System/
 ### Startup Sequence
 
 ```mermaid
-%%{init: {'theme': 'base'}}%%
 flowchart TD
-    classDef start    fill:#1565C0,stroke:#0D47A1,color:#FFFFFF,font-weight:bold
-    classDef loop     fill:#00695C,stroke:#004D40,color:#FFFFFF,font-weight:bold
-    classDef decision fill:#F57F17,stroke:#E65100,color:#000000,font-weight:bold
-    classDef module   fill:#6A1B9A,stroke:#4A148C,color:#FFFFFF
-    classDef demo     fill:#00695C,stroke:#004D40,color:#FFFFFF
-    classDef exit     fill:#B71C1C,stroke:#7F0000,color:#FFFFFF,font-weight:bold
-    classDef warn     fill:#37474F,stroke:#263238,color:#FFFFFF
+    A(["python main.py"])
+    B["banner() — print header"]
+    C["menu() — wait for input"]
+    D{{"User choice"}}
+    E["Import module<br/>run demo function"]
+    F["subprocess.run<br/>test files sequentially"]
+    G["subprocess.run<br/>demo/server.py"]
+    H["subprocess.run<br/>demo/client.py"]
+    I(["print 'Goodbye.' → exit"])
+    J["print 'Invalid choice.'"]
 
-    A["python main.py"]:::start --> B["banner() — print header"]:::warn
-    B --> C["menu() — print options, wait for input"]:::loop
-    C --> D{User enters choice}:::decision
-    D -->|"1-5"| E["Import module, run demo function"]:::module
-    D -->|"6"| F["subprocess.run each test file sequentially"]:::warn
-    D -->|"7"| G["subprocess.run demo/server.py — blocks until Ctrl+C"]:::demo
-    D -->|"8"| H["subprocess.run demo/client.py — runs to completion"]:::demo
-    D -->|"0"| I["print 'Goodbye.' → break → exit"]:::exit
-    D -->|"invalid"| J["print 'Invalid choice.'"]:::warn
+    A --> B --> C --> D
+    D -->|"1-5"| E
+    D -->|"6"| F
+    D -->|"7"| G
+    D -->|"8"| H
+    D -->|"0"| I
+    D -->|"invalid"| J
     E --> C
     F --> C
     G --> C
     H --> C
     J --> C
+
+    style A fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style B fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style C fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#312e81
+    style D fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    style E fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style F fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style G fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style H fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style I fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style J fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
 ```
 
 ### Server Initialization Sequence
 
 ```mermaid
-%%{init: {'theme': 'base'}}%%
 flowchart TD
-    classDef start    fill:#1565C0,stroke:#0D47A1,color:#FFFFFF,font-weight:bold
-    classDef dbOp     fill:#4527A0,stroke:#311B92,color:#FFFFFF
-    classDef decision fill:#F57F17,stroke:#E65100,color:#000000,font-weight:bold
-    classDef crypto   fill:#6A1B9A,stroke:#4A148C,color:#FFFFFF
-    classDef network  fill:#E65100,stroke:#BF360C,color:#FFFFFF
-    classDef block    fill:#1B5E20,stroke:#0D3B00,color:#FFFFFF,font-weight:bold
+    S1(["python demo/server.py"])
+    S2["load_user_db()<br/>demo/users.json"]
+    S3{"'alice' in db?"}
+    S4["register_user('alice',...)<br/>save_user_db()"]
+    S5["generate_rsa_keypair()<br/>2048 bits"]
+    S6["socket(AF_INET, SOCK_STREAM)"]
+    S7["setsockopt(SO_REUSEADDR, 1)"]
+    S8["bind(127.0.0.1, 65432)"]
+    S9["listen(1)"]
+    S10["accept() — BLOCKS"]
+    S11(["Begin handshake protocol"])
 
-    S1["python demo/server.py"]:::start --> S2["load_user_db('demo/users.json')"]:::dbOp
-    S2 --> S3{"'alice' in db?"}:::decision
-    S3 -->|No| S4["register_user('alice', 'password123', db)<br/>save_user_db(db)"]:::dbOp
+    S1 --> S2 --> S3
+    S3 -->|No| S4
     S3 -->|Yes| S5
-    S4 --> S5["generate_rsa_keypair() — 2048 bits"]:::crypto
-    S5 --> S6["socket.socket(AF_INET, SOCK_STREAM)"]:::network
-    S6 --> S7["setsockopt(SO_REUSEADDR, 1)"]:::network
-    S7 --> S8["bind(127.0.0.1, 65432)"]:::network
-    S8 --> S9["listen(1) — max 1 queued connection"]:::network
-    S9 --> S10["accept() — BLOCKS until client connects"]:::block
-    S10 --> S11["Begin handshake protocol..."]:::crypto
+    S4 --> S5
+    S5 --> S6 --> S7 --> S8 --> S9 --> S10 --> S11
+
+    style S1  fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style S2  fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style S3  fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    style S4  fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,color:#374151
+    style S5  fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#312e81
+    style S6  fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style S7  fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style S8  fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style S9  fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    style S10 fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style S11 fill:#bbf7d0,stroke:#16a34a,stroke-width:3px,color:#14532d
 ```
 
 `SO_REUSEADDR` allows the server to restart immediately after closing without waiting for the OS `TIME_WAIT` period (which normally takes ~60 seconds).
@@ -979,22 +1070,30 @@ flowchart TD
 ### Main Event Loop (Server Messaging)
 
 ```mermaid
-%%{init: {'theme': 'base'}}%%
 flowchart TD
-    classDef loop     fill:#1565C0,stroke:#0D47A1,color:#FFFFFF,font-weight:bold
-    classDef process  fill:#00695C,stroke:#004D40,color:#FFFFFF
-    classDef decision fill:#F57F17,stroke:#E65100,color:#000000,font-weight:bold
-    classDef error    fill:#B71C1C,stroke:#7F0000,color:#FFFFFF,font-weight:bold
-    classDef normal   fill:#1B5E20,stroke:#0D3B00,color:#FFFFFF
+    L(["Enter while True loop"])
+    R["recv_secure(conn, aes_key)"]
+    D{{"Exception?"}}
+    E["print 'Client disconnected'<br/>break"]
+    F["Exception propagates upward"]
+    G["print received message"]
+    H["construct echo reply"]
+    I["send_secure(conn, aes_key, reply)"]
 
-    L["Enter while True loop"]:::loop --> R["recv_secure(conn, aes_key)"]:::process
-    R --> D{Exception?}:::decision
-    D -->|"ConnectionError / EOFError"| E["print 'Client disconnected' → break"]:::error
-    D -->|"ValueError (tamper)"| F["Exception propagates upward"]:::error
-    D -->|"No exception"| G["print received message"]:::normal
-    G --> H["construct echo reply"]:::normal
-    H --> I["send_secure(conn, aes_key, reply)"]:::process
-    I --> L
+    L --> R --> D
+    D -->|"ConnectionError / EOFError"| E
+    D -->|"ValueError — tamper"| F
+    D -->|"No exception"| G
+    G --> H --> I --> L
+
+    style L fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style R fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style D fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    style E fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style F fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style G fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style H fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style I fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
 ```
 
 ### Shutdown Behavior
@@ -1089,20 +1188,27 @@ TCP is a byte stream — there are no natural message boundaries. Common alterna
 ### Network Error Handling
 
 ```mermaid
-%%{init: {'theme': 'base'}}%%
 flowchart TD
-    classDef start    fill:#1565C0,stroke:#0D47A1,color:#FFFFFF,font-weight:bold
-    classDef decision fill:#F57F17,stroke:#E65100,color:#000000,font-weight:bold
-    classDef error    fill:#B71C1C,stroke:#7F0000,color:#FFFFFF,font-weight:bold
-    classDef process  fill:#4527A0,stroke:#311B92,color:#FFFFFF
-    classDef success  fill:#1B5E20,stroke:#0D3B00,color:#FFFFFF,font-weight:bold
+    R(["recv_exact(sock, n)"])
+    C{"chunk received?"}
+    E["raise ConnectionError<br/>'Connection closed'"]
+    A["accumulate in buf"]
+    D{"len(buf) == n?"}
+    OK(["return buf"])
 
-    R["recv_exact(sock, n)"]:::start --> C{chunk received?}:::decision
-    C -->|"chunk is empty bytes b''"| E["raise ConnectionError('Connection closed unexpectedly')"]:::error
-    C -->|"chunk has data"| A["accumulate in buf"]:::process
-    A --> D{len(buf) == n?}:::decision
+    R --> C
+    C -->|"empty bytes b''"| E
+    C -->|"has data"| A
+    A --> D
     D -->|No| R
-    D -->|Yes| OK["return buf"]:::success
+    D -->|Yes| OK
+
+    style R  fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    style C  fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    style E  fill:#fecaca,stroke:#dc2626,stroke-width:2px,color:#7f1d1d
+    style A  fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#064e3b
+    style D  fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    style OK fill:#bbf7d0,stroke:#16a34a,stroke-width:3px,color:#14532d
 ```
 
 The `_recv_exact()` function handles TCP fragmentation — the OS may deliver data in multiple partial chunks. The loop guarantees exactly `n` bytes are read before returning.
