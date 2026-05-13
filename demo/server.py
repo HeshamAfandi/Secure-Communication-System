@@ -78,10 +78,10 @@ def recv_secure(sock: socket.socket, aes_key: bytes) -> bytes:
 def main():
     # Ensure a demo user exists
     db = load_user_db(DB_PATH)
-    if "alice" not in db:
-        register_user("alice", "password123", db)
+    if "Hossam" not in db:
+        register_user("Hossam", "password67", db)
         save_user_db(db, DB_PATH)
-        print("[SERVER] Created demo user: alice / password123")
+        print("[SERVER] Created demo user: Hossam / password67")
 
     private_key, public_key = generate_rsa_keypair()
     print(f"[SERVER] RSA key pair generated ({private_key.size_in_bits()} bits).")

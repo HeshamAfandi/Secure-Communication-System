@@ -62,7 +62,7 @@ def recv_secure(sock: socket.socket, aes_key: bytes) -> bytes:
     return data
 
 
-def main(username: str = "alice", password: str = "password123"):
+def main(username: str = "Hossam", password: str = "password67"):
     print(f"[CLIENT] Connecting to {HOST}:{PORT}...")
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.connect((HOST, PORT))
