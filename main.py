@@ -1,12 +1,3 @@
-"""
-main.py — Interactive CLI for the CSE451 Secure Communication Suite.
-
-Usage:
-    python main.py
-
-Then choose a module to demo from the menu.
-"""
-
 import sys
 import os
 

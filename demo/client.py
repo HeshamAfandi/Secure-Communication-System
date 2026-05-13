@@ -1,10 +1,3 @@
-"""
-client.py — Secure client demo.
-
-Connects to the demo server, performs RSA handshake + AES session setup,
-authenticates with username/password, then sends encrypted messages.
-"""
-
 import json
 import socket
 import struct

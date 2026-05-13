@@ -1,17 +1,3 @@
-"""
-server.py — Secure server demo.
-
-Handshake:
-  1. Server accepts connection.
-  2. Server sends its RSA public key (PEM).
-  3. Client sends: username + AES session key, all RSA-encrypted.
-  4. Server decrypts, authenticates the user.
-  5. All subsequent messages are AES-EAX encrypted + SHA-256 integrity checked.
-
-Wire format for each message after handshake (all fields length-prefixed, 4 bytes BE):
-  [4B len][nonce 16B][4B len][tag 16B][4B len][ciphertext]
-"""
-
 import json
 import socket
 import struct

@@ -1,11 +1,3 @@
-"""
-key_manager.py — Secure key generation, storage, and loading.
-
-AES keys are stored as raw binary files.
-RSA private keys are stored as passphrase-protected PEM files (AES-256-CBC).
-RSA public keys are stored as plain PEM files.
-"""
-
 import os
 from Crypto.PublicKey import RSA
 
@@ -13,10 +5,6 @@ from Crypto.PublicKey import RSA
 def save_aes_key(key: bytes, filepath: str) -> None:
     """
     Save a raw AES key to a file.
-
-    Args:
-        key: AES key bytes.
-        filepath: Destination file path.
     """
     os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
     with open(filepath, "wb") as f:
@@ -26,12 +14,6 @@ def save_aes_key(key: bytes, filepath: str) -> None:
 def load_aes_key(filepath: str) -> bytes:
     """
     Load a raw AES key from a file.
-
-    Args:
-        filepath: Path to the key file.
-
-    Returns:
-        AES key bytes.
     """
     with open(filepath, "rb") as f:
         return f.read()
@@ -40,13 +22,6 @@ def load_aes_key(filepath: str) -> bytes:
 def save_rsa_private_key(private_key, filepath: str, passphrase: str) -> None:
     """
     Save an RSA private key to a passphrase-protected PEM file.
-
-    The key is encrypted with AES-256-CBC before writing to disk.
-
-    Args:
-        private_key: RSA private key object.
-        filepath: Destination file path.
-        passphrase: Password used to encrypt the key on disk.
     """
     os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
     pem = private_key.export_key(
@@ -62,10 +37,6 @@ def save_rsa_private_key(private_key, filepath: str, passphrase: str) -> None:
 def save_rsa_public_key(public_key, filepath: str) -> None:
     """
     Save an RSA public key to a PEM file.
-
-    Args:
-        public_key: RSA public key object.
-        filepath: Destination file path.
     """
     os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
     pem = public_key.export_key(format="PEM")
@@ -76,13 +47,6 @@ def save_rsa_public_key(public_key, filepath: str) -> None:
 def load_rsa_private_key(filepath: str, passphrase: str):
     """
     Load and decrypt an RSA private key from a PEM file.
-
-    Args:
-        filepath: Path to the encrypted PEM file.
-        passphrase: Password used when the key was saved.
-
-    Returns:
-        RSA private key object.
     """
     with open(filepath, "rb") as f:
         pem = f.read()
@@ -92,12 +56,6 @@ def load_rsa_private_key(filepath: str, passphrase: str):
 def load_rsa_public_key(filepath: str):
     """
     Load an RSA public key from a PEM file.
-
-    Args:
-        filepath: Path to the PEM file.
-
-    Returns:
-        RSA public key object.
     """
     with open(filepath, "rb") as f:
         pem = f.read()

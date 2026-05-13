@@ -1,10 +1,3 @@
-"""
-aes_module.py — AES-128-EAX authenticated encryption.
-
-EAX mode provides both confidentiality (encryption) and integrity (authentication
-tag), making it suitable for secure message transmission without a separate MAC.
-"""
-
 import threading
 import queue
 from Crypto.Cipher import AES
@@ -12,25 +5,13 @@ from Crypto.Random import get_random_bytes
 
 
 def generate_aes_key() -> bytes:
-    """
-    Generate a random 16-byte (128-bit) AES key.
-
-    Returns:
-        16 random bytes suitable for use as an AES-128 key.
-    """
+    """Generate a random 16-byte (128-bit) AES key."""
     return get_random_bytes(16)
 
 
 def encrypt(plaintext: bytes, key: bytes) -> tuple[bytes, bytes, bytes]:
     """
     Encrypt plaintext using AES-128-EAX mode.
-
-    Args:
-        plaintext: Data to encrypt.
-        key: 16-byte AES key.
-
-    Returns:
-        Tuple of (ciphertext, nonce, tag). All three are needed for decryption.
     """
     cipher = AES.new(key, AES.MODE_EAX)
     ciphertext, tag = cipher.encrypt_and_digest(plaintext)
@@ -40,18 +21,6 @@ def encrypt(plaintext: bytes, key: bytes) -> tuple[bytes, bytes, bytes]:
 def decrypt(ciphertext: bytes, key: bytes, nonce: bytes, tag: bytes) -> bytes:
     """
     Decrypt and verify ciphertext using AES-128-EAX mode.
-
-    Args:
-        ciphertext: Encrypted data.
-        key: 16-byte AES key (must match the one used for encryption).
-        nonce: Nonce generated during encryption.
-        tag: Authentication tag generated during encryption.
-
-    Returns:
-        Decrypted plaintext bytes.
-
-    Raises:
-        ValueError: If the authentication tag is invalid (data was tampered).
     """
     cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
     plaintext = cipher.decrypt_and_verify(ciphertext, tag)
@@ -67,11 +36,6 @@ class EncryptionWorker(threading.Thread):
     """Background thread that encrypts messages from a queue."""
 
     def __init__(self, plaintext_queue: queue.Queue, ciphertext_queue: queue.Queue):
-        """
-        Args:
-            plaintext_queue: Queue supplying plaintext bytes (None signals stop).
-            ciphertext_queue: Queue that receives (ciphertext, nonce, tag) tuples.
-        """
         threading.Thread.__init__(self)
         self.plaintext_queue = plaintext_queue
         self.ciphertext_queue = ciphertext_queue

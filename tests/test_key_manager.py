@@ -29,7 +29,7 @@ def test_rsa_private_key_save_load():
     priv, _ = generate_rsa_keypair()
     with tempfile.NamedTemporaryFile(suffix=".pem", delete=False) as tmp:
         path = tmp.name
-    passphrase = "TestPass!99"
+    passphrase = "Lalaz_archive"
     try:
         save_rsa_private_key(priv, path, passphrase)
         loaded = load_rsa_private_key(path, passphrase)

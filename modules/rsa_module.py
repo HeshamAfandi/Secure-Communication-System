@@ -1,10 +1,3 @@
-"""
-rsa_module.py — RSA-2048 asymmetric encryption with OAEP padding.
-
-Typical use: encrypt a short AES session key with the recipient's RSA public key,
-then use that AES key for bulk data encryption (hybrid encryption scheme).
-"""
-
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 
@@ -12,12 +5,6 @@ from Crypto.Cipher import PKCS1_OAEP
 def generate_rsa_keypair(bits: int = 2048):
     """
     Generate an RSA key pair.
-
-    Args:
-        bits: Key size in bits (default 2048; use 4096 for higher security).
-
-    Returns:
-        Tuple of (private_key, public_key) as RsaKey objects.
     """
     private_key = RSA.generate(bits)
     public_key = private_key.publickey()
@@ -28,12 +15,6 @@ def encrypt_with_public_key(data: bytes, public_key) -> bytes:
     """
     Encrypt data with an RSA public key using OAEP padding.
 
-    Args:
-        data: Plaintext bytes (max ~214 bytes for RSA-2048).
-        public_key: RSA public key object.
-
-    Returns:
-        Encrypted ciphertext bytes.
     """
     cipher = PKCS1_OAEP.new(public_key)
     return cipher.encrypt(data)
@@ -42,13 +23,6 @@ def encrypt_with_public_key(data: bytes, public_key) -> bytes:
 def decrypt_with_private_key(ciphertext: bytes, private_key) -> bytes:
     """
     Decrypt RSA-OAEP ciphertext with a private key.
-
-    Args:
-        ciphertext: Encrypted bytes.
-        private_key: RSA private key object matching the public key used for encryption.
-
-    Returns:
-        Decrypted plaintext bytes.
     """
     cipher = PKCS1_OAEP.new(private_key)
     return cipher.decrypt(ciphertext)
@@ -57,12 +31,6 @@ def decrypt_with_private_key(ciphertext: bytes, private_key) -> bytes:
 def export_public_key(public_key) -> str:
     """
     Export an RSA public key as a PEM-encoded string.
-
-    Args:
-        public_key: RSA public key object.
-
-    Returns:
-        PEM string (begins with '-----BEGIN PUBLIC KEY-----').
     """
     return public_key.export_key(format="PEM").decode("utf-8")
 
