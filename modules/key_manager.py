@@ -79,7 +79,7 @@ if __name__ == "__main__":
         priv, pub = generate_rsa_keypair()
         priv_path = os.path.join(tmpdir, "private.pem")
         pub_path = os.path.join(tmpdir, "public.pem")
-        passphrase = "s3cur3P@ss!"
+        passphrase = "Lalaz_archive"
 
         save_rsa_private_key(priv, priv_path, passphrase)
         save_rsa_public_key(pub, pub_path)
